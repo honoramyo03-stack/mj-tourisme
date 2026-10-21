@@ -1,0 +1,6 @@
+{
+  "name": "Ravinala Tours Madagascar — Voyages & Circuits Authentiques",
+  "description": "Agence réceptive à Madagascar : circuits sur mesure, départs garantis, faune endémique, aventures aux Tsingy et séjours balnéaires en trois langues (FR, EN, MG).",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

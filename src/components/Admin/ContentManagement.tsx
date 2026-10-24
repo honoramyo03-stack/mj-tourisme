@@ -19,6 +19,11 @@ import {
   AlertTriangle,
   Lock,
   ShieldAlert,
+  UploadCloud,
+  Image as ImageIcon,
+  Star,
+  Loader2,
+  ImagePlus,
 } from 'lucide-react';
 
 export const ContentManagement: React.FC = () => {
@@ -54,8 +59,57 @@ export const ContentManagement: React.FC = () => {
   const [newTheme, setNewTheme] = useState<TourTheme>('nature');
   const [newDifficulty, setNewDifficulty] = useState<TourDifficulty>('modérée');
   const [newMode, setNewMode] = useState<TourMode>('prive');
-  const [newImage, setNewImage] = useState('/src/assets/images/hero_madagascar_baobabs_1792223499188.jpg');
+  const [newImages, setNewImages] = useState<string[]>([
+    '/src/assets/images/hero_madagascar_baobabs_1792223499188.jpg',
+  ]);
+  const [newMainImage, setNewMainImage] = useState<string>(
+    '/src/assets/images/hero_madagascar_baobabs_1792223499188.jpg'
+  );
+  const [customImageUrl, setCustomImageUrl] = useState<string>('');
+  const [isUploadingFiles, setIsUploadingFiles] = useState(false);
   const [newSummaryFr, setNewSummaryFr] = useState('');
+
+  const handleLocalImageUpload = (files: FileList | null, isEditing = false) => {
+    if (!files || files.length === 0) return;
+    setIsUploadingFiles(true);
+    const fileArray = Array.from(files);
+    let loadedCount = 0;
+    const uploadedUrls: string[] = [];
+
+    fileArray.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const result = event.target?.result as string;
+        if (result) {
+          uploadedUrls.push(result);
+        }
+        loadedCount++;
+        if (loadedCount === fileArray.length) {
+          if (isEditing && editingCircuit) {
+            const updatedGallery = [...(editingCircuit.gallery || []), ...uploadedUrls];
+            setEditingCircuit({
+              ...editingCircuit,
+              gallery: updatedGallery,
+              mainImage: editingCircuit.mainImage || uploadedUrls[0] || '',
+            });
+          } else {
+            setNewImages((prev) => [...prev, ...uploadedUrls]);
+            if (!newMainImage || newImages.length === 0) {
+              setNewMainImage(uploadedUrls[0]);
+            }
+          }
+          setIsUploadingFiles(false);
+        }
+      };
+      reader.onerror = () => {
+        loadedCount++;
+        if (loadedCount === fileArray.length) {
+          setIsUploadingFiles(false);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  };
 
   const handleOpenCreateCircuit = () => {
     setNewTitleFr('');
@@ -67,7 +121,9 @@ export const ContentManagement: React.FC = () => {
     setNewTheme('nature');
     setNewDifficulty('modérée');
     setNewMode('prive');
-    setNewImage('/src/assets/images/hero_madagascar_baobabs_1792223499188.jpg');
+    setNewImages(['/src/assets/images/hero_madagascar_baobabs_1792223499188.jpg']);
+    setNewMainImage('/src/assets/images/hero_madagascar_baobabs_1792223499188.jpg');
+    setCustomImageUrl('');
     setNewSummaryFr('');
     setCreateCircuitModalOpen(true);
   };
@@ -80,6 +136,9 @@ export const ContentManagement: React.FC = () => {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)+/g, '');
+
+    const finalMainImage = newMainImage || newImages[0] || '/src/assets/images/hero_madagascar_baobabs_1792223499188.jpg';
+    const finalGallery = newImages.length > 0 ? newImages : [finalMainImage];
 
     const newCirc: Circuit = {
       id: newId,
@@ -94,8 +153,8 @@ export const ContentManagement: React.FC = () => {
         en: 'Expedition on legendary Madagascar tracks, spectacular landscapes, and endemic biodiversity.',
         mg: 'Fitsidihana manokana ireo lalam-pitetezana mahafinaritra eto Madagasikara sy ireo biby tsy manan-tsahala.',
       },
-      mainImage: newImage || '/src/assets/images/hero_madagascar_baobabs_1792223499188.jpg',
-      gallery: [newImage || '/src/assets/images/hero_madagascar_baobabs_1792223499188.jpg'],
+      mainImage: finalMainImage,
+      gallery: finalGallery,
       durationDays: newDuration,
       durationNights: Math.max(1, newDuration - 1),
       region: newRegion,
@@ -859,17 +918,143 @@ export const ContentManagement: React.FC = () => {
               />
             </div>
 
+            {/* Local Image Upload & Gallery Manager for Edit */}
+            <div className="pt-2 border-t border-stone-100 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="font-bold text-stone-800 block text-xs">
+                    Photos et Galerie du Circuit (Téléversement local illimité)
+                  </label>
+                  <p className="text-[11px] text-stone-500">
+                    Ajoutez des photos locales depuis votre ordinateur ou téléphone sans limite.
+                  </p>
+                </div>
+                <span className="text-[11px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                  {(editingCircuit.gallery || [editingCircuit.mainImage]).filter(Boolean).length} photos
+                </span>
+              </div>
+
+              {/* Upload Dropzone */}
+              <div className="relative border-2 border-dashed border-stone-300 hover:border-amber-500 rounded-xl p-4 text-center bg-stone-50 hover:bg-amber-50/30 transition-all cursor-pointer group">
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={(e) => handleLocalImageUpload(e.target.files, true)}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  title="Choisir des photos locales"
+                />
+                <div className="flex flex-col items-center justify-center gap-1.5 pointer-events-none">
+                  {isUploadingFiles ? (
+                    <div className="flex items-center gap-2 text-amber-700 font-semibold text-xs">
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span>Chargement des images locales...</span>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="w-9 h-9 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <UploadCloud className="w-5 h-5" />
+                      </div>
+                      <div className="text-xs font-bold text-stone-800">
+                        Cliquez ou glissez-déposez des photos locales ici
+                      </div>
+                      <div className="text-[11px] text-stone-500">
+                        JPG, PNG, WEBP — Illimité (enregistrées localement)
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Add by URL */}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Ou collez une URL d'image web..."
+                  value={customImageUrl}
+                  onChange={(e) => setCustomImageUrl(e.target.value)}
+                  className="flex-1 text-xs p-2 rounded-lg border border-stone-300"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (customImageUrl.trim()) {
+                      const updatedGallery = [...(editingCircuit.gallery || []), customImageUrl.trim()];
+                      setEditingCircuit({
+                        ...editingCircuit,
+                        gallery: updatedGallery,
+                        mainImage: editingCircuit.mainImage || customImageUrl.trim(),
+                      });
+                      setCustomImageUrl('');
+                    }
+                  }}
+                  className="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-white font-semibold rounded-lg text-xs cursor-pointer shrink-0"
+                >
+                  Ajouter URL
+                </button>
+              </div>
+
+              {/* Gallery Grid */}
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5 max-h-48 overflow-y-auto p-1 bg-stone-50 rounded-xl border border-stone-200">
+                {(editingCircuit.gallery || [editingCircuit.mainImage]).filter(Boolean).map((img, idx) => {
+                  const isMain = editingCircuit.mainImage === img;
+                  return (
+                    <div
+                      key={idx}
+                      className={`relative group rounded-lg overflow-hidden border-2 aspect-video bg-stone-200 shadow-sm ${
+                        isMain ? 'border-amber-500 ring-2 ring-amber-400/40' : 'border-stone-200'
+                      }`}
+                    >
+                      <img src={img} alt="" className="w-full h-full object-cover" />
+                      
+                      {isMain ? (
+                        <div className="absolute top-1 left-1 bg-amber-500 text-stone-950 font-bold text-[9px] px-1.5 py-0.5 rounded shadow flex items-center gap-1">
+                          <Star className="w-2.5 h-2.5 fill-stone-950" />
+                          Couverture
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setEditingCircuit({ ...editingCircuit, mainImage: img })}
+                          className="absolute bottom-1 left-1 bg-stone-900/80 hover:bg-amber-600 text-white text-[9px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                          title="Définir comme photo de couverture"
+                        >
+                          Mettre en couv.
+                        </button>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = (editingCircuit.gallery || []).filter((x) => x !== img);
+                          setEditingCircuit({
+                            ...editingCircuit,
+                            gallery: updated,
+                            mainImage: isMain ? (updated[0] || '') : editingCircuit.mainImage,
+                          });
+                        }}
+                        className="absolute top-1 right-1 bg-red-600/90 hover:bg-red-700 text-white p-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                        title="Supprimer cette image"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
             <div className="pt-3 border-t border-stone-100 flex items-center justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setEditingCircuit(null)}
-                className="px-3 py-1.5 text-stone-600 hover:text-stone-900"
+                className="px-3 py-1.5 text-stone-600 hover:text-stone-900 font-semibold cursor-pointer"
               >
                 Annuler
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-stone-900 hover:bg-stone-800 text-white font-bold rounded"
+                className="px-4 py-2 bg-stone-900 hover:bg-stone-800 text-white font-bold rounded-lg cursor-pointer"
               >
                 Enregistrer les modifications
               </button>
@@ -1039,17 +1224,127 @@ export const ContentManagement: React.FC = () => {
                 </div>
               </div>
 
-              <div className="md:col-span-2">
-                <label className="block font-semibold text-stone-700 mb-1">
-                  URL de l'image principale
-                </label>
-                <input
-                  type="text"
-                  value={newImage}
-                  onChange={(e) => setNewImage(e.target.value)}
-                  placeholder="/src/assets/images/... ou https://..."
-                  className="w-full text-xs p-2 rounded-lg border border-stone-300"
-                />
+              {/* Unlimited Local Image Uploads & Gallery for New Circuit */}
+              <div className="md:col-span-2 pt-2 border-t border-stone-100 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="block font-bold text-stone-800 text-xs">
+                      Photos et Galerie du Circuit (Téléversement local illimité) *
+                    </label>
+                    <p className="text-[11px] text-stone-500">
+                      Téléversez autant de photos locales que vous voulez depuis votre appareil. Cliquez sur une photo pour la définir comme image de couverture principale.
+                    </p>
+                  </div>
+                  <span className="text-[11px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                    {newImages.length} photos téléversées
+                  </span>
+                </div>
+
+                {/* Dropzone */}
+                <div className="relative border-2 border-dashed border-stone-300 hover:border-amber-500 rounded-xl p-4 text-center bg-stone-50 hover:bg-amber-50/30 transition-all cursor-pointer group">
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={(e) => handleLocalImageUpload(e.target.files, false)}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    title="Choisir des photos locales (illimité)"
+                  />
+                  <div className="flex flex-col items-center justify-center gap-1.5 pointer-events-none">
+                    {isUploadingFiles ? (
+                      <div className="flex items-center gap-2 text-amber-700 font-semibold text-xs">
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <span>Téléversement des photos locales en cours...</span>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <UploadCloud className="w-5 h-5" />
+                        </div>
+                        <div className="text-xs font-bold text-stone-800">
+                          Cliquez pour sélectionner des photos locales ou glissez-déposez ici
+                        </div>
+                        <div className="text-[11px] text-stone-500">
+                          Sélectionnez plusieurs photos à la fois (JPG, PNG, WEBP) — Illimité
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Add by URL as secondary option */}
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Ou collez une URL d'image web..."
+                    value={customImageUrl}
+                    onChange={(e) => setCustomImageUrl(e.target.value)}
+                    className="flex-1 text-xs p-2 rounded-lg border border-stone-300"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (customImageUrl.trim()) {
+                        setNewImages((prev) => [...prev, customImageUrl.trim()]);
+                        if (!newMainImage) setNewMainImage(customImageUrl.trim());
+                        setCustomImageUrl('');
+                      }
+                    }}
+                    className="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-white font-semibold rounded-lg text-xs cursor-pointer shrink-0"
+                  >
+                    Ajouter URL
+                  </button>
+                </div>
+
+                {/* Gallery Grid */}
+                {newImages.length > 0 && (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5 max-h-52 overflow-y-auto p-1.5 bg-stone-50 rounded-xl border border-stone-200">
+                    {newImages.map((img, idx) => {
+                      const isMain = newMainImage === img || (!newMainImage && idx === 0);
+                      return (
+                        <div
+                          key={idx}
+                          className={`relative group rounded-lg overflow-hidden border-2 aspect-video bg-stone-200 shadow-sm ${
+                            isMain ? 'border-amber-500 ring-2 ring-amber-400/40' : 'border-stone-200'
+                          }`}
+                        >
+                          <img src={img} alt="" className="w-full h-full object-cover" />
+
+                          {isMain ? (
+                            <div className="absolute top-1 left-1 bg-amber-500 text-stone-950 font-bold text-[9px] px-1.5 py-0.5 rounded shadow flex items-center gap-1">
+                              <Star className="w-2.5 h-2.5 fill-stone-950" />
+                              Couverture
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => setNewMainImage(img)}
+                              className="absolute bottom-1 left-1 bg-stone-900/80 hover:bg-amber-600 text-white text-[9px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                              title="Définir comme photo principale"
+                            >
+                              Mettre en couv.
+                            </button>
+                          )}
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = newImages.filter((x) => x !== img);
+                              setNewImages(updated);
+                              if (isMain) {
+                                setNewMainImage(updated[0] || '');
+                              }
+                            }}
+                            className="absolute top-1 right-1 bg-red-600/90 hover:bg-red-700 text-white p-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                            title="Supprimer cette image"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               <div className="md:col-span-2">

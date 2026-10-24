@@ -45,17 +45,17 @@ export const GuaranteedDepartures: React.FC = () => {
   };
 
   return (
-    <section className="py-12 bg-stone-50 border-y border-stone-200">
+    <section className="py-12 bg-stone-50 dark:bg-stone-950 border-y border-stone-200 dark:border-stone-800 transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
           <div>
-            <div className="text-xs font-semibold uppercase tracking-wider text-amber-700 mb-1">
+            <div className="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400 mb-1">
               {t('departures.kicker')}
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-stone-900 tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-bold text-stone-900 dark:text-white tracking-tight">
               {t('departures.title')}
             </h2>
-            <p className="mt-1 text-sm text-stone-600 max-w-xl">
+            <p className="mt-1 text-sm text-stone-600 dark:text-stone-300 max-w-xl">
               {t('departures.subtitle')}
             </p>
           </div>
@@ -70,50 +70,50 @@ export const GuaranteedDepartures: React.FC = () => {
             return (
               <div
                 key={dep.id}
-                className="bg-white rounded-xl border border-stone-200 p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between"
+                className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-3">
                     {getStatusBadge(dep.status)}
-                    <span className="text-xs font-semibold text-stone-500 tabular-nums">
+                    <span className="text-xs font-semibold text-stone-500 dark:text-stone-400 tabular-nums">
                       {seatsRemaining} {t('departures.availableSeats')}
                     </span>
                   </div>
 
                   <h3
                     onClick={() => handleOpenCircuit(dep.circuitSlug)}
-                    className="text-base font-bold text-stone-900 hover:text-amber-700 transition-colors cursor-pointer line-clamp-2"
+                    className="text-base font-bold text-stone-900 dark:text-white hover:text-amber-700 dark:hover:text-amber-400 transition-colors cursor-pointer line-clamp-2"
                   >
                     {tourTitle}
                   </h3>
 
-                  <div className="mt-4 space-y-2 text-xs text-stone-600 bg-stone-50 p-3 rounded-lg border border-stone-100">
+                  <div className="mt-4 space-y-2 text-xs text-stone-600 dark:text-stone-300 bg-stone-50 dark:bg-stone-800/60 p-3 rounded-lg border border-stone-100 dark:border-stone-700">
                     <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-1.5 text-stone-500">
-                        <Calendar className="w-3.5 h-3.5 text-amber-600" />
+                      <span className="flex items-center gap-1.5 text-stone-500 dark:text-stone-400">
+                        <Calendar className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                         {t('departures.dates')}
                       </span>
-                      <span className="font-semibold text-stone-900">
+                      <span className="font-semibold text-stone-900 dark:text-white">
                         {new Date(dep.startDate).toLocaleDateString()} → {new Date(dep.endDate).toLocaleDateString()}
                       </span>
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-1.5 text-stone-500">
-                        <Users className="w-3.5 h-3.5 text-amber-600" />
+                      <span className="flex items-center gap-1.5 text-stone-500 dark:text-stone-400">
+                        <Users className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                         {t('departures.group')}
                       </span>
-                      <span className="font-semibold text-stone-900">
+                      <span className="font-semibold text-stone-900 dark:text-white">
                         {dep.seatsBooked}/{dep.capacityTotal} {t('departures.booked')} (min {dep.minParticipants})
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-5 pt-4 border-t border-stone-100 flex items-center justify-between gap-2">
+                <div className="mt-5 pt-4 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between gap-2">
                   <div>
-                    <span className="text-[10px] uppercase text-stone-600 block">{t('departures.rate')}</span>
-                    <span className="text-lg font-extrabold text-stone-900 tabular-nums">
+                    <span className="text-[10px] uppercase text-stone-500 dark:text-stone-400 block">{t('departures.rate')}</span>
+                    <span className="text-lg font-extrabold text-stone-900 dark:text-white tabular-nums">
                       {dep.priceEUR} €
                     </span>
                   </div>
@@ -121,7 +121,7 @@ export const GuaranteedDepartures: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handleOpenCircuit(dep.circuitSlug)}
-                      className="px-2.5 py-1.5 text-xs text-stone-600 hover:text-stone-900 font-medium cursor-pointer"
+                      className="px-2.5 py-1.5 text-xs text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white font-medium cursor-pointer"
                     >
                       {t('departures.details')}
                     </button>

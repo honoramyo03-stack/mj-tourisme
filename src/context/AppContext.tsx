@@ -69,6 +69,23 @@ interface AppContextType {
   isFavorite: (circuitId: string) => boolean;
   activeCatalogTab: 'all' | 'departures' | 'excursions' | 'favorites';
   setActiveCatalogTab: (tab: 'all' | 'departures' | 'excursions' | 'favorites') => void;
+  // Currency System (EUR, USD, MGA Ariary)
+  currency: 'EUR' | 'USD' | 'MGA';
+  setCurrency: (curr: 'EUR' | 'USD' | 'MGA') => void;
+  formatPrice: (eurAmount: number, forceCurrency?: 'EUR' | 'USD' | 'MGA') => string;
+  convertAmount: (amount: number, from: 'EUR' | 'USD' | 'MGA', to: 'EUR' | 'USD' | 'MGA') => number;
+  isCurrencyConverterModalOpen: boolean;
+  setIsCurrencyConverterModalOpen: (open: boolean) => void;
+  // Circuit Comparison System
+  comparisonCircuits: Circuit[];
+  addToComparison: (circuit: Circuit) => void;
+  removeFromComparison: (circuitId: string) => void;
+  clearComparison: () => void;
+  isComparisonModalOpen: boolean;
+  setIsComparisonModalOpen: (open: boolean) => void;
+  // Budget Simulator System
+  isBudgetSimulatorOpen: boolean;
+  setIsBudgetSimulatorOpen: (open: boolean) => void;
   // Filters for Catalog & Dynamic Search Bar
   filters: {
     query: string;
@@ -287,6 +304,88 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const isFavorite = (circuitId: string) => {
     return favorites.includes(circuitId);
   };
+
+  // Currency State (EUR default, USD, MGA Ariary)
+  const [currency, setCurrencyState] = useState<'EUR' | 'USD' | 'MGA'>(() => {
+    try {
+      const saved = localStorage.getItem('ravinala_currency');
+      if (saved === 'EUR' || saved === 'USD' || saved === 'MGA') return saved;
+    } catch {}
+    return 'EUR';
+  });
+
+  const setCurrency = (c: 'EUR' | 'USD' | 'MGA') => {
+    setCurrencyState(c);
+    try {
+      localStorage.setItem('ravinala_currency', c);
+    } catch {}
+  };
+
+  // Real-world official exchange rates:
+  // 1 EUR = 4,950 MGA
+  // 1 USD = 4,580 MGA
+  // 1 EUR = 1.08 USD
+  const RATE_EUR_TO_MGA = 4950;
+  const RATE_EUR_TO_USD = 1.08;
+
+  const convertAmount = (amount: number, from: 'EUR' | 'USD' | 'MGA', to: 'EUR' | 'USD' | 'MGA'): number => {
+    if (from === to || !amount) return amount;
+    // Normalize to EUR first
+    let inEur = amount;
+    if (from === 'MGA') inEur = amount / RATE_EUR_TO_MGA;
+    if (from === 'USD') inEur = amount / RATE_EUR_TO_USD;
+
+    // Convert from EUR to target
+    if (to === 'EUR') return Math.round(inEur);
+    if (to === 'USD') return Math.round(inEur * RATE_EUR_TO_USD);
+    if (to === 'MGA') return Math.round(inEur * RATE_EUR_TO_MGA);
+    return amount;
+  };
+
+  const formatPrice = (eurAmount: number, forceCurrency?: 'EUR' | 'USD' | 'MGA'): string => {
+    if (!eurAmount || isNaN(eurAmount) || eurAmount <= 0) return 'Sur devis';
+    const targetCurr = forceCurrency || currency;
+
+    if (targetCurr === 'EUR') {
+      return `${eurAmount.toLocaleString('fr-FR')} €`;
+    }
+    if (targetCurr === 'USD') {
+      const usd = Math.round(eurAmount * RATE_EUR_TO_USD);
+      return `$${usd.toLocaleString('en-US')}`;
+    }
+    if (targetCurr === 'MGA') {
+      const mga = Math.round(eurAmount * RATE_EUR_TO_MGA);
+      return `${mga.toLocaleString('fr-FR')} Ar`;
+    }
+    return `${eurAmount} €`;
+  };
+
+  const [isCurrencyConverterModalOpen, setIsCurrencyConverterModalOpen] = useState(false);
+
+  // Circuit Comparison System
+  const [comparisonCircuits, setComparisonCircuits] = useState<Circuit[]>([]);
+  const [isComparisonModalOpen, setIsComparisonModalOpen] = useState(false);
+
+  const addToComparison = (circuit: Circuit) => {
+    setComparisonCircuits((prev) => {
+      if (prev.some((c) => c.id === circuit.id)) return prev;
+      if (prev.length >= 3) {
+        return [...prev.slice(1), circuit];
+      }
+      return [...prev, circuit];
+    });
+  };
+
+  const removeFromComparison = (circuitId: string) => {
+    setComparisonCircuits((prev) => prev.filter((c) => c.id !== circuitId));
+  };
+
+  const clearComparison = () => {
+    setComparisonCircuits([]);
+  };
+
+  // Budget Simulator System
+  const [isBudgetSimulatorOpen, setIsBudgetSimulatorOpen] = useState(false);
 
   // Admin state & Authentication
   const [isAdminMode, setIsAdminMode] = useState<boolean>(false);
@@ -678,6 +777,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         isFavorite,
         activeCatalogTab,
         setActiveCatalogTab,
+        currency,
+        setCurrency,
+        formatPrice,
+        convertAmount,
+        isCurrencyConverterModalOpen,
+        setIsCurrencyConverterModalOpen,
+        comparisonCircuits,
+        addToComparison,
+        removeFromComparison,
+        clearComparison,
+        isComparisonModalOpen,
+        setIsComparisonModalOpen,
+        isBudgetSimulatorOpen,
+        setIsBudgetSimulatorOpen,
         filters,
         setFilters,
         resetFilters,

@@ -6,75 +6,75 @@ export const AboutSection: React.FC = () => {
   const { t, setActiveView, openQuoteModal } = useApp();
 
   return (
-    <section className="py-16 bg-stone-100/70 border-t border-stone-200">
+    <section className="py-16 bg-stone-100/70 dark:bg-stone-900/60 border-t border-stone-200 dark:border-stone-800 transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-14">
-          <div className="text-xs font-semibold uppercase tracking-wider text-amber-700 mb-2">
+          <div className="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400 mb-2">
             {t('about.kicker')}
           </div>
-          <h2 className="text-3xl font-extrabold text-stone-900 tracking-tight">
+          <h2 className="text-3xl font-extrabold text-stone-900 dark:text-white tracking-tight">
             {t('about.title')}
           </h2>
-          <p className="mt-3 text-sm text-stone-600 leading-relaxed">
+          <p className="mt-3 text-sm text-stone-600 dark:text-stone-300 leading-relaxed">
             {t('about.subtitle')}
           </p>
         </div>
 
         {/* 4 Pillars of Trust */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm hover:shadow-md transition-shadow">
-            <div className="w-12 h-12 bg-amber-50 text-amber-700 rounded-xl flex items-center justify-center mb-4">
+          <div className="bg-white dark:bg-stone-900 p-6 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-sm hover:shadow-md transition-shadow">
+            <div className="w-12 h-12 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 rounded-xl flex items-center justify-center mb-4">
               <ShieldCheck className="w-6 h-6" />
             </div>
-            <h3 className="text-base font-bold text-stone-900 mb-2">
+            <h3 className="text-base font-bold text-stone-900 dark:text-white mb-2">
               {t('about.pillar1.title')}
             </h3>
-            <p className="text-xs text-stone-600 leading-relaxed">
+            <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
               {t('about.pillar1.desc')}
             </p>
           </div>
 
-          <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm hover:shadow-md transition-shadow">
-            <div className="w-12 h-12 bg-amber-50 text-amber-700 rounded-xl flex items-center justify-center mb-4">
+          <div className="bg-white dark:bg-stone-900 p-6 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-sm hover:shadow-md transition-shadow">
+            <div className="w-12 h-12 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 rounded-xl flex items-center justify-center mb-4">
               <Truck className="w-6 h-6" />
             </div>
-            <h3 className="text-base font-bold text-stone-900 mb-2">
+            <h3 className="text-base font-bold text-stone-900 dark:text-white mb-2">
               {t('about.pillar2.title')}
             </h3>
-            <p className="text-xs text-stone-600 leading-relaxed">
+            <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
               {t('about.pillar2.desc')}
             </p>
           </div>
 
-          <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm hover:shadow-md transition-shadow">
-            <div className="w-12 h-12 bg-amber-50 text-amber-700 rounded-xl flex items-center justify-center mb-4">
+          <div className="bg-white dark:bg-stone-900 p-6 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-sm hover:shadow-md transition-shadow">
+            <div className="w-12 h-12 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 rounded-xl flex items-center justify-center mb-4">
               <HeartHandshake className="w-6 h-6" />
             </div>
-            <h3 className="text-base font-bold text-stone-900 mb-2">
+            <h3 className="text-base font-bold text-stone-900 dark:text-white mb-2">
               {t('about.pillar3.title')}
             </h3>
-            <p className="text-xs text-stone-600 leading-relaxed">
+            <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
               {t('about.pillar3.desc')}
             </p>
           </div>
 
-          <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm hover:shadow-md transition-shadow">
-            <div className="w-12 h-12 bg-amber-50 text-amber-700 rounded-xl flex items-center justify-center mb-4">
+          <div className="bg-white dark:bg-stone-900 p-6 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-sm hover:shadow-md transition-shadow">
+            <div className="w-12 h-12 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 rounded-xl flex items-center justify-center mb-4">
               <PhoneCall className="w-6 h-6" />
             </div>
-            <h3 className="text-base font-bold text-stone-900 mb-2">
+            <h3 className="text-base font-bold text-stone-900 dark:text-white mb-2">
               {t('about.pillar4.title')}
             </h3>
-            <p className="text-xs text-stone-600 leading-relaxed">
+            <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
               {t('about.pillar4.desc')}
             </p>
           </div>
         </div>
 
         {/* Agency Story & Commitments */}
-        <div className="mt-12 bg-white rounded-2xl border border-stone-200 p-8 shadow-sm grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          <div className="lg:col-span-7 space-y-4 text-xs sm:text-sm text-stone-700 leading-relaxed">
-            <h3 className="text-xl font-bold text-stone-900">
+        <div className="mt-12 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-8 shadow-sm grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <div className="lg:col-span-7 space-y-4 text-xs sm:text-sm text-stone-700 dark:text-stone-300 leading-relaxed">
+            <h3 className="text-xl font-bold text-stone-900 dark:text-white">
               {t('about.story.title')}
             </h3>
             <p>
@@ -84,26 +84,26 @@ export const AboutSection: React.FC = () => {
               {t('about.story.p2')}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-              <div className="flex items-center gap-2 text-xs font-semibold text-stone-900">
-                <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+              <div className="flex items-center gap-2 text-xs font-semibold text-stone-900 dark:text-stone-100">
+                <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                 <span>{t('about.check.license')}</span>
               </div>
-              <div className="flex items-center gap-2 text-xs font-semibold text-stone-900">
-                <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+              <div className="flex items-center gap-2 text-xs font-semibold text-stone-900 dark:text-stone-100">
+                <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                 <span>{t('about.check.partners')}</span>
               </div>
-              <div className="flex items-center gap-2 text-xs font-semibold text-stone-900">
-                <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+              <div className="flex items-center gap-2 text-xs font-semibold text-stone-900 dark:text-stone-100">
+                <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                 <span>{t('about.check.insurance')}</span>
               </div>
-              <div className="flex items-center gap-2 text-xs font-semibold text-stone-900">
-                <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+              <div className="flex items-center gap-2 text-xs font-semibold text-stone-900 dark:text-stone-100">
+                <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                 <span>{t('about.check.transparency')}</span>
               </div>
             </div>
           </div>
 
-          <div className="lg:col-span-5 bg-stone-900 text-white p-6 rounded-xl flex flex-col justify-between space-y-6">
+          <div className="lg:col-span-5 bg-stone-900 dark:bg-stone-950 text-white p-6 rounded-xl border border-stone-800 flex flex-col justify-between space-y-6">
             <div>
               <span className="text-xs font-bold text-amber-400 uppercase tracking-widest">
                 {t('about.advisor.badge')}

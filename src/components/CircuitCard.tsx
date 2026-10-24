@@ -1,8 +1,21 @@
 import React, { useState } from 'react';
 import { Circuit } from '../types';
 import { useApp } from '../context/AppContext';
-import { Calendar, MapPin, Users, ArrowRight, Sparkles, Heart, FileDown, Loader2 } from 'lucide-react';
+import {
+  Calendar,
+  MapPin,
+  Users,
+  ArrowRight,
+  Sparkles,
+  Heart,
+  FileDown,
+  Loader2,
+  Layers,
+  Share2,
+  Check,
+} from 'lucide-react';
 import { generateSingleCircuitPdf } from '../utils/circuitPdfGenerator';
+import { WeatherBadge } from './WeatherBadge';
 
 interface CircuitCardProps {
   circuit: Circuit;
@@ -10,12 +23,25 @@ interface CircuitCardProps {
 }
 
 export const CircuitCard: React.FC<CircuitCardProps> = ({ circuit, onSelect }) => {
-  const { language, t, openQuoteModal, toggleFavorite, isFavorite } = useApp();
+  const {
+    language,
+    t,
+    openQuoteModal,
+    toggleFavorite,
+    isFavorite,
+    formatPrice,
+    comparisonCircuits,
+    addToComparison,
+    removeFromComparison,
+  } = useApp();
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
 
   const title = circuit.title[language] || circuit.title['fr'];
   const summary = circuit.summary[language] || circuit.summary['fr'];
   const priceNote = circuit.priceNote[language] || circuit.priceNote['fr'];
+
+  const isCompared = comparisonCircuits.some((c) => c.id === circuit.id);
 
   const difficultyLabels: Record<string, string> = {
     facile: language === 'en' ? 'Easy' : language === 'mg' ? 'Mora' : 'Facile',
@@ -52,6 +78,31 @@ export const CircuitCard: React.FC<CircuitCardProps> = ({ circuit, onSelect }) =
     }
   };
 
+  const handleShare = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const shareUrl = window.location.origin + `?circuit=${circuit.slug}`;
+    if (navigator.share) {
+      navigator.share({
+        title: title,
+        text: `Découvrez le circuit "${title}" avec Ravinala Tours Madagascar !`,
+        url: shareUrl,
+      }).catch(() => {});
+    } else {
+      navigator.clipboard?.writeText(shareUrl);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2000);
+    }
+  };
+
+  const handleToggleComparison = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isCompared) {
+      removeFromComparison(circuit.id);
+    } else {
+      addToComparison(circuit);
+    }
+  };
+
   return (
     <div className="group bg-white dark:bg-stone-900 rounded-2xl overflow-hidden border border-stone-200 dark:border-stone-800 hover:border-amber-500/50 dark:hover:border-amber-500/50 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
       {/* Media Container */}
@@ -69,51 +120,85 @@ export const CircuitCard: React.FC<CircuitCardProps> = ({ circuit, onSelect }) =
           }}
         />
 
-        {/* Featured Flag (Discrete tag) */}
-        {circuit.isFeatured && (
-          <div className="absolute top-3 left-3 bg-amber-500 text-stone-950 font-bold text-[11px] px-2.5 py-1 rounded shadow flex items-center gap-1">
-            <Sparkles className="w-3 h-3" />
-            <span>{t('card.featured')}</span>
-          </div>
-        )}
-
-        {/* Quick PDF Download on Image */}
-        <button
-          type="button"
-          onClick={handlePdfDownload}
-          disabled={isGeneratingPdf}
-          className="absolute top-3 right-12 p-2 rounded-full backdrop-blur-md shadow-md transition-all cursor-pointer bg-stone-900/60 hover:bg-stone-900 text-amber-400 hover:scale-105"
-          title="Télécharger la fiche circuit en PDF"
-          aria-label="Télécharger la fiche circuit en PDF"
-        >
-          {isGeneratingPdf ? (
-            <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
-          ) : (
-            <FileDown className="w-4 h-4" />
+        {/* Top Left: Featured Tag + Live Weather Widget right next to top of image */}
+        <div className="absolute top-3 left-3 flex items-center gap-1.5 flex-wrap max-w-[calc(100%-110px)]">
+          {circuit.isFeatured && (
+            <div className="bg-amber-500 text-stone-950 font-bold text-[11px] px-2 py-0.8 rounded shadow flex items-center gap-1">
+              <Sparkles className="w-3 h-3" />
+              <span>{t('card.featured')}</span>
+            </div>
           )}
-        </button>
 
-        {/* Favorite Button */}
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleFavorite(circuit.id);
-          }}
-          className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur-md shadow-md transition-all cursor-pointer ${
-            favorited
-              ? 'bg-rose-500 text-white hover:bg-rose-600 scale-105'
-              : 'bg-stone-900/60 text-white hover:bg-stone-900 hover:scale-105'
-          }`}
-          title={favorited ? t('favorites.remove') : t('favorites.add')}
-          aria-label={favorited ? t('favorites.remove') : t('favorites.add')}
-        >
-          <Heart
-            className={`w-4 h-4 transition-transform ${
-              favorited ? 'fill-current scale-110' : ''
+          {/* CRITICAL REQUIREMENT: Weather Widget placed right next to top of circuit image */}
+          <WeatherBadge region={circuit.region} variant="compact" />
+        </div>
+
+        {/* Top Right Action Icons: Comparison, Share, PDF, Favorite */}
+        <div className="absolute top-3 right-3 flex items-center gap-1.5">
+          {/* Compare Button */}
+          <button
+            type="button"
+            onClick={handleToggleComparison}
+            className={`p-2 rounded-full backdrop-blur-md shadow-md transition-all cursor-pointer ${
+              isCompared
+                ? 'bg-amber-500 text-stone-950 font-bold scale-105 ring-2 ring-white'
+                : 'bg-stone-900/60 text-white hover:bg-stone-900 hover:text-amber-400'
             }`}
-          />
-        </button>
+            title={isCompared ? 'Retirer du comparateur' : 'Comparer ce circuit'}
+            aria-label="Comparer ce circuit"
+          >
+            <Layers className="w-4 h-4" />
+          </button>
+
+          {/* Share Button */}
+          <button
+            type="button"
+            onClick={handleShare}
+            className="p-2 rounded-full backdrop-blur-md shadow-md transition-all cursor-pointer bg-stone-900/60 hover:bg-stone-900 text-white hover:text-amber-400"
+            title={copiedLink ? 'Lien copié !' : 'Partager ce circuit'}
+            aria-label="Partager ce circuit"
+          >
+            {copiedLink ? <Check className="w-4 h-4 text-emerald-400" /> : <Share2 className="w-4 h-4" />}
+          </button>
+
+          {/* Quick PDF Download on Image */}
+          <button
+            type="button"
+            onClick={handlePdfDownload}
+            disabled={isGeneratingPdf}
+            className="p-2 rounded-full backdrop-blur-md shadow-md transition-all cursor-pointer bg-stone-900/60 hover:bg-stone-900 text-amber-400 hover:scale-105"
+            title="Télécharger la fiche circuit en PDF"
+            aria-label="Télécharger la fiche circuit en PDF"
+          >
+            {isGeneratingPdf ? (
+              <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
+            ) : (
+              <FileDown className="w-4 h-4" />
+            )}
+          </button>
+
+          {/* Favorite Button */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleFavorite(circuit.id);
+            }}
+            className={`p-2 rounded-full backdrop-blur-md shadow-md transition-all cursor-pointer ${
+              favorited
+                ? 'bg-rose-500 text-white hover:bg-rose-600 scale-105'
+                : 'bg-stone-900/60 text-white hover:bg-stone-900 hover:scale-105'
+            }`}
+            title={favorited ? t('favorites.remove') : t('favorites.add')}
+            aria-label={favorited ? t('favorites.remove') : t('favorites.add')}
+          >
+            <Heart
+              className={`w-4 h-4 transition-transform ${
+                favorited ? 'fill-current scale-110' : ''
+              }`}
+            />
+          </button>
+        </div>
 
         {/* Duration Overlay Bottom Right */}
         <div className="absolute bottom-3 right-3 bg-stone-950/80 backdrop-blur-sm text-white text-xs font-semibold px-2.5 py-1 rounded">
@@ -158,7 +243,7 @@ export const CircuitCard: React.FC<CircuitCardProps> = ({ circuit, onSelect }) =
               </span>
               <div className="flex items-baseline gap-1">
                 <span className="text-xl font-extrabold text-stone-900 dark:text-white tabular-nums">
-                  {circuit.basePriceEUR > 0 ? `${circuit.basePriceEUR.toLocaleString()} €` : t('card.onQuote')}
+                  {formatPrice(circuit.basePriceEUR)}
                 </span>
                 {circuit.basePriceEUR > 0 && (
                   <span className="text-xs text-stone-500 dark:text-stone-400 font-normal">

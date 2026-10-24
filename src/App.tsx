@@ -21,7 +21,12 @@ import { Footer } from './components/Footer';
 import { AdminDashboard } from './components/Admin/AdminDashboard';
 import { AdminLoginModal } from './components/Admin/AdminLoginModal';
 import { WhatsAppFloatingButton } from './components/WhatsAppFloatingButton';
+import { ChatboxAssistant } from './components/ChatboxAssistant';
 import { DynamicSearchBar } from './components/DynamicSearchBar';
+import { InteractiveCircuitMap } from './components/InteractiveCircuitMap';
+import { CurrencyConverterView } from './components/CurrencyConverterView';
+import { CircuitComparisonModal } from './components/CircuitComparisonModal';
+import { BudgetSimulatorModal } from './components/BudgetSimulatorModal';
 import {
   Compass,
   Filter,
@@ -37,6 +42,8 @@ import {
   Award,
   Users,
   ArrowUpDown,
+  LayoutGrid,
+  Map,
 } from 'lucide-react';
 import { Circuit } from './types';
 
@@ -62,7 +69,15 @@ const MainApp: React.FC = () => {
     filters,
     setFilters,
     resetFilters,
+    comparisonCircuits,
+    setIsComparisonModalOpen,
+    clearComparison,
+    isCurrencyConverterModalOpen,
+    setIsCurrencyConverterModalOpen,
   } = useApp();
+
+  // Catalog display mode: grid cards, interactive Leaflet map, or split view
+  const [catalogViewMode, setCatalogViewMode] = useState<'grid' | 'map' | 'split'>('grid');
 
   // Filtered Circuits
   const filteredCircuits = useMemo(() => {
@@ -492,12 +507,57 @@ const MainApp: React.FC = () => {
                 </div>
               </div>
 
-              {/* Status row: Result count and reset */}
-              <div className="pt-2 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between text-xs text-stone-500 dark:text-stone-400">
+              {/* Status row: Result count, View mode toggle (Grid / Leaflet Map / Split), and reset */}
+              <div className="pt-2 border-t border-stone-100 dark:border-stone-800 flex flex-wrap items-center justify-between gap-3 text-xs text-stone-500 dark:text-stone-400">
                 <span className="font-semibold text-stone-700 dark:text-stone-300 flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                   <span>{filteredCircuits.length} {t('filter.results')}</span>
                 </span>
+
+                {/* View Mode Toggle: Grid, Leaflet Map, Split */}
+                <div className="flex items-center gap-1 bg-stone-100 dark:bg-stone-800 p-1 rounded-xl border border-stone-200 dark:border-stone-700">
+                  <button
+                    onClick={() => setCatalogViewMode('grid')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      catalogViewMode === 'grid'
+                        ? 'bg-white dark:bg-stone-700 text-stone-900 dark:text-white shadow-xs'
+                        : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
+                    }`}
+                    title="Affichage en cartes détaillées"
+                  >
+                    <LayoutGrid className="w-3.5 h-3.5" />
+                    <span>{language === 'en' ? 'Grid' : 'Grille'}</span>
+                  </button>
+
+                  <button
+                    onClick={() => setCatalogViewMode('map')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      catalogViewMode === 'map'
+                        ? 'bg-amber-500 text-stone-950 shadow-xs'
+                        : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
+                    }`}
+                    title="Affichage des tracés et étapes sur carte interactive Leaflet"
+                  >
+                    <Map className="w-3.5 h-3.5" />
+                    <span>{language === 'en' ? 'Interactive Map' : 'Carte des tracés'}</span>
+                    <span className="bg-amber-400/30 text-stone-900 dark:text-white text-[10px] px-1.5 py-0.2 rounded-full font-bold">
+                      {filteredCircuits.length}
+                    </span>
+                  </button>
+
+                  <button
+                    onClick={() => setCatalogViewMode('split')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      catalogViewMode === 'split'
+                        ? 'bg-white dark:bg-stone-700 text-stone-900 dark:text-white shadow-xs'
+                        : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
+                    }`}
+                    title="Afficher à la fois la carte et les fiches"
+                  >
+                    <Layers className="w-3.5 h-3.5" />
+                    <span>{language === 'en' ? 'Split View' : 'Mixte'}</span>
+                  </button>
+                </div>
 
                 <button
                   onClick={resetFilters}
@@ -509,7 +569,7 @@ const MainApp: React.FC = () => {
               </div>
             </div>
 
-            {/* Results Grid */}
+            {/* Results Display Area */}
             {filteredCircuits.length === 0 ? (
               <div className="text-center py-16 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-8 max-w-lg mx-auto space-y-3 shadow-xs">
                 {activeCatalogTab === 'favorites' ? (
@@ -548,15 +608,74 @@ const MainApp: React.FC = () => {
                   </>
                 )}
               </div>
+            ) : catalogViewMode === 'map' ? (
+              /* VIEW MODE: LEAFLET INTERACTIVE MAP */
+              <div className="space-y-4">
+                <InteractiveCircuitMap
+                  filteredCircuits={filteredCircuits}
+                  onSelectCircuit={(c) => setSelectedCircuit(c)}
+                  heightClass="h-[620px] lg:h-[720px]"
+                />
+              </div>
+            ) : catalogViewMode === 'split' ? (
+              /* VIEW MODE: SPLIT (LEAFLET MAP + CARDS GRID) */
+              <div className="space-y-8">
+                <InteractiveCircuitMap
+                  filteredCircuits={filteredCircuits}
+                  onSelectCircuit={(c) => setSelectedCircuit(c)}
+                  heightClass="h-[460px] lg:h-[540px]"
+                />
+                <div>
+                  <h3 className="text-sm font-bold text-stone-900 dark:text-white uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <LayoutGrid className="w-4 h-4 text-amber-500" />
+                    <span>Fiches détaillées des circuits ({filteredCircuits.length})</span>
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {filteredCircuits.map((circuit) => (
+                      <CircuitCard
+                        key={circuit.id}
+                        circuit={circuit}
+                        onSelect={(c) => setSelectedCircuit(c)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {filteredCircuits.map((circuit) => (
-                  <CircuitCard
-                    key={circuit.id}
-                    circuit={circuit}
-                    onSelect={(c) => setSelectedCircuit(c)}
-                  />
-                ))}
+              /* VIEW MODE: CARDS GRID (WITH QUICK MAP BANNER) */
+              <div className="space-y-6">
+                <div className="bg-gradient-to-r from-amber-500/15 via-amber-500/5 to-transparent dark:from-amber-500/10 p-3 sm:p-4 rounded-xl border border-amber-300/60 dark:border-amber-800/60 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-amber-500 text-stone-950 flex items-center justify-center font-bold shrink-0">
+                      <Map className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-stone-900 dark:text-white">
+                        Visualiser les {filteredCircuits.length} circuits sur la carte interactive
+                      </div>
+                      <div className="text-[11px] text-stone-600 dark:text-stone-400">
+                        Explorez les tracés GPS complets, étapes et points d'intérêt sur la carte Leaflet
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => setCatalogViewMode('map')}
+                    className="px-3.5 py-2 bg-stone-900 hover:bg-stone-800 dark:bg-amber-500 dark:hover:bg-amber-400 text-white dark:text-stone-950 font-bold rounded-lg text-xs cursor-pointer shrink-0 transition-all shadow-xs"
+                  >
+                    Ouvrir la carte
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {filteredCircuits.map((circuit) => (
+                    <CircuitCard
+                      key={circuit.id}
+                      circuit={circuit}
+                      onSelect={(c) => setSelectedCircuit(c)}
+                    />
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -597,10 +716,45 @@ const MainApp: React.FC = () => {
 
         {/* VIEW: CONTACT */}
         {activeView === 'contact' && <ContactSection />}
+
+        {/* VIEW: CURRENCY CONVERTER DEDICATED TAB */}
+        {activeView === 'converter' && <CurrencyConverterView />}
       </main>
+
+      {/* Floating Circuit Comparison Dock */}
+      {comparisonCircuits.length > 0 && (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-40 bg-stone-900/95 text-white backdrop-blur-md px-4 py-3 rounded-2xl shadow-2xl border border-amber-500/40 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4">
+          <div className="w-8 h-8 rounded-lg bg-amber-500 text-stone-950 font-bold flex items-center justify-center shrink-0">
+            <Layers className="w-4 h-4" />
+          </div>
+          <div className="text-xs">
+            <span className="font-bold text-amber-400">{comparisonCircuits.length}</span>
+            <span className="text-stone-300"> / 3 {language === 'en' ? 'circuits in comparison' : 'circuits à comparer'}</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsComparisonModalOpen(true)}
+              className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold rounded-lg text-xs cursor-pointer shadow-sm transition-all"
+            >
+              {language === 'en' ? 'Compare now' : 'Comparer'}
+            </button>
+            <button
+              onClick={clearComparison}
+              className="p-1.5 text-stone-400 hover:text-white rounded-lg transition-colors cursor-pointer"
+              title="Vider la comparaison"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Floating Non-Intrusive WhatsApp Button */}
       <WhatsAppFloatingButton />
+
+      {/* Automated Site-Wide Virtual Assistant Chatbox */}
+      <ChatboxAssistant />
 
       {/* Footer */}
       <Footer />
@@ -611,6 +765,28 @@ const MainApp: React.FC = () => {
           circuit={selectedCircuit}
           onClose={() => setSelectedCircuit(null)}
         />
+      )}
+
+      {/* Side-by-Side Circuit Comparison Modal */}
+      <CircuitComparisonModal />
+
+      {/* Interactive Travel Budget Simulator Modal */}
+      <BudgetSimulatorModal />
+
+      {/* Dedicated Currency Converter Modal (when opened from anywhere) */}
+      {isCurrencyConverterModalOpen && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-stone-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
+          <div className="relative w-full max-w-4xl max-h-[92vh] overflow-y-auto rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 p-4 sm:p-6 shadow-2xl">
+            <button
+              onClick={() => setIsCurrencyConverterModalOpen(false)}
+              className="absolute top-4 right-4 z-20 bg-stone-900/80 hover:bg-stone-900 text-white p-2 rounded-full cursor-pointer"
+              aria-label="Fermer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <CurrencyConverterView isModal onClose={() => setIsCurrencyConverterModalOpen(false)} />
+          </div>
+        </div>
       )}
 
       {/* Quote Request Modal */}

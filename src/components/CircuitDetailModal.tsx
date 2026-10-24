@@ -16,8 +16,19 @@ import {
   Heart,
   FileDown,
   Loader2,
+  Layers,
+  Share2,
+  Check,
+  Bed,
+  Utensils,
+  Milestone,
+  Route,
+  Car,
+  Eye,
+  ListOrdered,
 } from 'lucide-react';
 import { generateSingleCircuitPdf } from '../utils/circuitPdfGenerator';
+import { WeatherBadge } from './WeatherBadge';
 
 interface CircuitDetailModalProps {
   circuit: Circuit;
@@ -25,10 +36,26 @@ interface CircuitDetailModalProps {
 }
 
 export const CircuitDetailModal: React.FC<CircuitDetailModalProps> = ({ circuit, onClose }) => {
-  const { language, t, openQuoteModal, departures, toggleFavorite, isFavorite } = useApp();
+  const {
+    language,
+    t,
+    openQuoteModal,
+    departures,
+    toggleFavorite,
+    isFavorite,
+    formatPrice,
+    comparisonCircuits,
+    addToComparison,
+    removeFromComparison,
+    setIsComparisonModalOpen,
+  } = useApp();
   const [activeDay, setActiveDay] = useState<number>(1);
   const [activePhoto, setActivePhoto] = useState<string>(circuit.mainImage);
   const [isDownloadingPdf, setIsDownloadingPdf] = useState<boolean>(false);
+  const [itineraryMode, setItineraryMode] = useState<'timeline' | 'tabs'>('timeline');
+  const [copiedShare, setCopiedShare] = useState<boolean>(false);
+
+  const isCompared = comparisonCircuits.some((c) => c.id === circuit.id);
 
   const handleDownloadPdf = () => {
     try {
@@ -144,6 +171,61 @@ export const CircuitDetailModal: React.FC<CircuitDetailModalProps> = ({ circuit,
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Compare Button */}
+            <button
+              onClick={() => {
+                if (isCompared) {
+                  removeFromComparison(circuit.id);
+                } else {
+                  addToComparison(circuit);
+                  setIsComparisonModalOpen(true);
+                }
+              }}
+              className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 text-xs font-bold ${
+                isCompared
+                  ? 'bg-amber-500 text-stone-950 shadow-sm'
+                  : 'bg-stone-800 text-stone-300 hover:text-white border border-stone-700 hover:border-amber-500/50'
+              }`}
+              title={isCompared ? 'Retirer de la comparaison' : 'Ajouter au comparateur'}
+            >
+              <Layers className="w-4 h-4" />
+              <span className="hidden sm:inline">
+                {isCompared ? 'Comparé' : 'Comparer'}
+              </span>
+            </button>
+
+            {/* Quick Share */}
+            <button
+              onClick={() => {
+                const shareUrl = window.location.origin + `?circuit=${circuit.slug}`;
+                if (navigator.share) {
+                  navigator.share({
+                    title: title,
+                    text: `Découvrez le circuit "${title}" avec Ravinala Tours Madagascar !`,
+                    url: shareUrl,
+                  }).catch(() => {});
+                } else {
+                  navigator.clipboard?.writeText(shareUrl);
+                  setCopiedShare(true);
+                  setTimeout(() => setCopiedShare(false), 2000);
+                }
+              }}
+              className="p-2 sm:px-3 sm:py-2 bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white border border-stone-700 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 text-xs font-semibold"
+              title={copiedShare ? 'Lien copié dans le presse-papier !' : 'Partager'}
+            >
+              {copiedShare ? (
+                <>
+                  <Check className="w-4 h-4 text-emerald-400" />
+                  <span className="hidden sm:inline text-emerald-400">Copié !</span>
+                </>
+              ) : (
+                <>
+                  <Share2 className="w-4 h-4" />
+                  <span className="hidden sm:inline">Partager</span>
+                </>
+              )}
+            </button>
+
             <button
               onClick={handleDownloadPdf}
               disabled={isDownloadingPdf}
@@ -191,13 +273,18 @@ export const CircuitDetailModal: React.FC<CircuitDetailModalProps> = ({ circuit,
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             {/* Visual Gallery */}
             <div className="lg:col-span-7 space-y-3">
-              <div className="aspect-[16/10] bg-stone-100 rounded-xl overflow-hidden relative border border-stone-200">
+              <div className="aspect-[16/10] bg-stone-100 dark:bg-stone-800 rounded-xl overflow-hidden relative border border-stone-200 dark:border-stone-800">
                 <img
                   src={activePhoto}
                   alt={title}
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover"
                 />
+
+                {/* CRITICAL USER REQUIREMENT: Weather Widget placed right next to top of circuit image */}
+                <div className="absolute top-3 left-3 z-10 max-w-[calc(100%-24px)]">
+                  <WeatherBadge region={circuit.region} variant="detailed" />
+                </div>
               </div>
 
               {/* Thumbnails */}
@@ -219,45 +306,45 @@ export const CircuitDetailModal: React.FC<CircuitDetailModalProps> = ({ circuit,
             </div>
 
             {/* Quick Specs & Booking Box */}
-            <div className="lg:col-span-5 bg-stone-50 p-5 rounded-xl border border-stone-200 flex flex-col justify-between h-full">
+            <div className="lg:col-span-5 bg-stone-50 dark:bg-stone-800/60 p-5 rounded-xl border border-stone-200 dark:border-stone-800 flex flex-col justify-between h-full">
               <div>
-                <p className="text-sm text-stone-600 leading-relaxed italic">
+                <p className="text-sm text-stone-600 dark:text-stone-300 leading-relaxed italic">
                   "{summary}"
                 </p>
 
                 <div className="mt-5 space-y-2.5 text-xs">
-                  <div className="flex items-center justify-between py-1.5 border-b border-stone-200">
-                    <span className="text-stone-500">{t('circuit.startEnd')}</span>
-                    <span className="font-semibold text-stone-900 text-right">{circuit.startingPoint} → {circuit.endingPoint}</span>
+                  <div className="flex items-center justify-between py-1.5 border-b border-stone-200 dark:border-stone-700">
+                    <span className="text-stone-500 dark:text-stone-400">{t('circuit.startEnd')}</span>
+                    <span className="font-semibold text-stone-900 dark:text-white text-right">{circuit.startingPoint} → {circuit.endingPoint}</span>
                   </div>
-                  <div className="flex items-center justify-between py-1.5 border-b border-stone-200">
-                    <span className="text-stone-500">{t('circuit.difficultyLabel')}</span>
-                    <span className="font-semibold text-stone-900">{difficultyLabels[circuit.difficulty] || circuit.difficulty}</span>
+                  <div className="flex items-center justify-between py-1.5 border-b border-stone-200 dark:border-stone-700">
+                    <span className="text-stone-500 dark:text-stone-400">{t('circuit.difficultyLabel')}</span>
+                    <span className="font-semibold text-stone-900 dark:text-white">{difficultyLabels[circuit.difficulty] || circuit.difficulty}</span>
                   </div>
-                  <div className="flex items-center justify-between py-1.5 border-b border-stone-200">
-                    <span className="text-stone-500">{t('circuit.modeLabel')}</span>
-                    <span className="font-semibold text-stone-900">{modeLabels[circuit.mode] || circuit.mode.replace('_', ' ')}</span>
+                  <div className="flex items-center justify-between py-1.5 border-b border-stone-200 dark:border-stone-700">
+                    <span className="text-stone-500 dark:text-stone-400">{t('circuit.modeLabel')}</span>
+                    <span className="font-semibold text-stone-900 dark:text-white">{modeLabels[circuit.mode] || circuit.mode.replace('_', ' ')}</span>
                   </div>
-                  <div className="flex items-center justify-between py-1.5 border-b border-stone-200">
-                    <span className="text-stone-500">{t('circuit.guideLangLabel')}</span>
-                    <span className="font-semibold text-stone-900">{guideLanguagesDisplay}</span>
+                  <div className="flex items-center justify-between py-1.5 border-b border-stone-200 dark:border-stone-700">
+                    <span className="text-stone-500 dark:text-stone-400">{t('circuit.guideLangLabel')}</span>
+                    <span className="font-semibold text-stone-900 dark:text-white">{guideLanguagesDisplay}</span>
                   </div>
                 </div>
               </div>
 
               {/* Price & Actions Box */}
-              <div className="mt-6 pt-4 border-t border-stone-200">
+              <div className="mt-6 pt-4 border-t border-stone-200 dark:border-stone-700">
                 <div className="mb-3">
-                  <span className="text-xs text-stone-600 uppercase font-semibold">{t('card.from')}</span>
+                  <span className="text-xs text-stone-600 dark:text-stone-400 uppercase font-semibold">{t('card.from')}</span>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-2xl font-black text-stone-900 tabular-nums">
-                      {circuit.basePriceEUR > 0 ? `${circuit.basePriceEUR.toLocaleString()} €` : t('card.onQuote')}
+                    <span className="text-2xl font-black text-stone-900 dark:text-amber-400 tabular-nums">
+                      {circuit.basePriceEUR > 0 ? formatPrice(circuit.basePriceEUR) : t('card.onQuote')}
                     </span>
                     {circuit.basePriceEUR > 0 && (
-                      <span className="text-xs text-stone-600">{t('card.perPerson')}</span>
+                      <span className="text-xs text-stone-600 dark:text-stone-400">{t('card.perPerson')}</span>
                     )}
                   </div>
-                  <p className="text-[11px] text-stone-600 mt-1 leading-snug">{priceNote}</p>
+                  <p className="text-[11px] text-stone-600 dark:text-stone-400 mt-1 leading-snug">{priceNote}</p>
                 </div>
 
                 <div className="space-y-2">
@@ -322,80 +409,200 @@ export const CircuitDetailModal: React.FC<CircuitDetailModalProps> = ({ circuit,
             </div>
           )}
 
-          {/* Day-by-day Itinerary Section */}
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base sm:text-lg font-bold text-stone-900 flex items-center gap-2">
-                <Compass className="w-5 h-5 text-amber-600" />
-                {t('circuit.itinerary')}
-              </h3>
-              <span className="text-xs font-medium text-stone-500">
-                {circuit.dayProgram.length} {t('circuit.detailedSteps')}
-              </span>
-            </div>
+          {/* Day-by-day Itinerary Section with Visual Timeline & Tabs Switcher */}
+          <div className="pt-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+              <div>
+                <h3 className="text-base sm:text-lg font-bold text-stone-900 dark:text-white flex items-center gap-2">
+                  <Compass className="w-5 h-5 text-amber-500" />
+                  <span>{t('circuit.itinerary')}</span>
+                </h3>
+                <p className="text-xs text-stone-500 dark:text-stone-400">
+                  {circuit.dayProgram.length} {t('circuit.detailedSteps')} · {circuit.startingPoint} → {circuit.endingPoint}
+                </p>
+              </div>
 
-            {/* Day Selector Buttons */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-2 border-b border-stone-200">
-              {circuit.dayProgram.map((dp) => (
+              {/* View Mode Toggle: Visual Timeline vs Classic Day Tabs */}
+              <div className="inline-flex p-1 bg-stone-100 dark:bg-stone-800 rounded-xl border border-stone-200 dark:border-stone-700 self-start sm:self-auto">
                 <button
-                  key={dp.day}
-                  onClick={() => setActiveDay(dp.day)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer ${
-                    activeDay === dp.day
-                      ? 'bg-stone-900 text-white shadow-sm'
-                      : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                  type="button"
+                  onClick={() => setItineraryMode('timeline')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    itineraryMode === 'timeline'
+                      ? 'bg-amber-500 text-stone-950 shadow-sm'
+                      : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
                   }`}
                 >
-                  {t('circuit.dayPrefix')} {dp.day}
+                  <Route className="w-3.5 h-3.5" />
+                  <span>{language === 'en' ? 'Visual Timeline' : language === 'mg' ? 'Lalam-baovao mirindra' : 'Timeline Visuelle'}</span>
                 </button>
-              ))}
+                <button
+                  type="button"
+                  onClick={() => setItineraryMode('tabs')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    itineraryMode === 'tabs'
+                      ? 'bg-amber-500 text-stone-950 shadow-sm'
+                      : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
+                  }`}
+                >
+                  <ListOrdered className="w-3.5 h-3.5" />
+                  <span>{language === 'en' ? 'Day by Day' : language === 'mg' ? 'Isan\'andro' : 'Vue par jour'}</span>
+                </button>
+              </div>
             </div>
 
-            {/* Active Day Detail Card */}
-            {(() => {
-              const currentDay = circuit.dayProgram.find((d) => d.day === activeDay) || circuit.dayProgram[0];
-              if (!currentDay) return null;
-              const dayTitle = currentDay.title[language] || currentDay.title['fr'];
-              const dayDesc = currentDay.description[language] || currentDay.description['fr'];
+            {/* MODE 1: ILLUSTRATED VISUAL TIMELINE */}
+            {itineraryMode === 'timeline' ? (
+              <div className="relative pl-6 sm:pl-8 border-l-2 border-dashed border-amber-400 dark:border-amber-500/70 space-y-6 sm:space-y-8 ml-3 sm:ml-4 py-2">
+                {circuit.dayProgram.map((dp, idx) => {
+                  const dayTitle = dp.title[language] || dp.title['fr'];
+                  const dayDesc = dp.description[language] || dp.description['fr'];
+                  const isFirst = idx === 0;
+                  const isLast = idx === circuit.dayProgram.length - 1;
 
-              return (
-                <div className="mt-4 p-5 bg-stone-50/80 rounded-xl border border-stone-200 space-y-4">
-                  <div className="flex items-baseline gap-3">
-                    <span className="text-xs font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded">
-                      {t('circuit.dayPrefix')} {currentDay.day}
-                    </span>
-                    <h4 className="text-base font-bold text-stone-900">{dayTitle}</h4>
-                  </div>
+                  return (
+                    <div key={dp.day} className="relative group">
+                      {/* Milestone Node on Connecting Line */}
+                      <div
+                        className={`absolute -left-[31px] sm:-left-[39px] top-1.5 w-7 h-7 sm:w-9 sm:h-9 rounded-full font-black flex items-center justify-center text-[11px] sm:text-xs shadow-md ring-4 ring-white dark:ring-stone-900 transition-transform group-hover:scale-110 ${
+                          isFirst
+                            ? 'bg-emerald-600 text-white'
+                            : isLast
+                            ? 'bg-amber-600 text-white'
+                            : 'bg-stone-900 dark:bg-amber-500 text-amber-400 dark:text-stone-950'
+                        }`}
+                      >
+                        {dp.day}
+                      </div>
 
-                  <p className="text-sm text-stone-700 leading-relaxed whitespace-pre-line">
-                    {dayDesc}
-                  </p>
+                      {/* Timeline Day Card */}
+                      <div className="bg-stone-50/90 dark:bg-stone-850 p-4 sm:p-5 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-xs hover:border-amber-400/60 dark:hover:border-amber-500/60 transition-all space-y-3">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                              {t('circuit.dayPrefix')} {dp.day}
+                            </span>
+                            {isFirst && (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
+                                {language === 'en' ? 'Start' : language === 'mg' ? 'Fiaingana' : 'Départ'}
+                              </span>
+                            )}
+                            {isLast && (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
+                                {language === 'en' ? 'Arrival & End' : language === 'mg' ? 'Fahatongavana' : 'Arrivée'}
+                              </span>
+                            )}
+                          </div>
+                          <h4 className="w-full sm:w-auto text-sm sm:text-base font-bold text-stone-900 dark:text-white">
+                            {dayTitle}
+                          </h4>
+                        </div>
 
-                  <div className="pt-3 border-t border-stone-200/80 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                    <div>
-                      <span className="text-stone-500 font-medium">{t('circuit.lodging')} : </span>
-                      <span className="font-semibold text-stone-800">{currentDay.lodging}</span>
+                        {/* Narrative description */}
+                        <p className="text-xs sm:text-sm text-stone-700 dark:text-stone-300 leading-relaxed whitespace-pre-line">
+                          {dayDesc}
+                        </p>
+
+                        {/* Lodging & Meals badges */}
+                        <div className="pt-2 border-t border-stone-200/80 dark:border-stone-700/80 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                          <div className="flex items-center gap-1.5 text-stone-700 dark:text-stone-300">
+                            <Bed className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                            <span className="text-stone-500 dark:text-stone-400">{t('circuit.lodging')} :</span>
+                            <span className="font-semibold truncate">{dp.lodging}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-stone-700 dark:text-stone-300">
+                            <Utensils className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                            <span className="text-stone-500 dark:text-stone-400">{t('circuit.meals')} :</span>
+                            <span className="font-semibold truncate">{translateMeal(dp.meals)}</span>
+                          </div>
+                        </div>
+
+                        {/* Key highlights tags */}
+                        {dp.highlights && dp.highlights.length > 0 && (
+                          <div className="flex items-center flex-wrap gap-1.5 pt-1 text-[11px]">
+                            {dp.highlights.map((hl, i) => (
+                              <span
+                                key={i}
+                                className="inline-flex items-center gap-1 bg-white dark:bg-stone-800 text-stone-800 dark:text-stone-200 px-2 py-0.8 rounded-md border border-stone-200 dark:border-stone-700"
+                              >
+                                <CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" />
+                                <span>{hl}</span>
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <span className="text-stone-500 font-medium">{t('circuit.meals')} : </span>
-                      <span className="font-semibold text-stone-800">{translateMeal(currentDay.meals)}</span>
-                    </div>
-                  </div>
-
-                  {currentDay.highlights && currentDay.highlights.length > 0 && (
-                    <div className="flex items-center flex-wrap gap-2 pt-1 text-xs text-stone-600">
-                      <span className="font-semibold text-stone-700">{t('circuit.keyPoints')}</span>
-                      {currentDay.highlights.map((hl, i) => (
-                        <span key={i} className="inline-flex items-center gap-1 bg-white px-2 py-1 rounded border border-stone-200">
-                          <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                          {hl}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                  );
+                })}
+              </div>
+            ) : (
+              /* MODE 2: CLASSIC DAY TABS SELECTOR */
+              <div>
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-2 border-b border-stone-200 dark:border-stone-700">
+                  {circuit.dayProgram.map((dp) => (
+                    <button
+                      key={dp.day}
+                      type="button"
+                      onClick={() => setActiveDay(dp.day)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer ${
+                        activeDay === dp.day
+                          ? 'bg-amber-500 text-stone-950 font-bold shadow-sm'
+                          : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700'
+                      }`}
+                    >
+                      {t('circuit.dayPrefix')} {dp.day}
+                    </button>
+                  ))}
                 </div>
-              );
-            })()}
+
+                {/* Active Day Detail Card */}
+                {(() => {
+                  const currentDay = circuit.dayProgram.find((d) => d.day === activeDay) || circuit.dayProgram[0];
+                  if (!currentDay) return null;
+                  const dayTitle = currentDay.title[language] || currentDay.title['fr'];
+                  const dayDesc = currentDay.description[language] || currentDay.description['fr'];
+
+                  return (
+                    <div className="mt-4 p-5 bg-stone-50/90 dark:bg-stone-800/60 rounded-xl border border-stone-200 dark:border-stone-700 space-y-4">
+                      <div className="flex items-baseline gap-3">
+                        <span className="text-xs font-bold text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/70 px-2 py-0.5 rounded">
+                          {t('circuit.dayPrefix')} {currentDay.day}
+                        </span>
+                        <h4 className="text-base font-bold text-stone-900 dark:text-white">{dayTitle}</h4>
+                      </div>
+
+                      <p className="text-sm text-stone-700 dark:text-stone-300 leading-relaxed whitespace-pre-line">
+                        {dayDesc}
+                      </p>
+
+                      <div className="pt-3 border-t border-stone-200/80 dark:border-stone-700/80 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                        <div>
+                          <span className="text-stone-500 dark:text-stone-400 font-medium">{t('circuit.lodging')} : </span>
+                          <span className="font-semibold text-stone-800 dark:text-stone-200">{currentDay.lodging}</span>
+                        </div>
+                        <div>
+                          <span className="text-stone-500 dark:text-stone-400 font-medium">{t('circuit.meals')} : </span>
+                          <span className="font-semibold text-stone-800 dark:text-stone-200">{translateMeal(currentDay.meals)}</span>
+                        </div>
+                      </div>
+
+                      {currentDay.highlights && currentDay.highlights.length > 0 && (
+                        <div className="flex items-center flex-wrap gap-2 pt-1 text-xs text-stone-600 dark:text-stone-400">
+                          <span className="font-semibold text-stone-700 dark:text-stone-300">{t('circuit.keyPoints')}</span>
+                          {currentDay.highlights.map((hl, i) => (
+                            <span key={i} className="inline-flex items-center gap-1 bg-white dark:bg-stone-800 px-2 py-1 rounded border border-stone-200 dark:border-stone-700">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                              {hl}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
           </div>
 
           {/* Inclusions & Exclusions */}

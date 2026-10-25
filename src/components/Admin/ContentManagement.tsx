@@ -647,159 +647,165 @@ export const ContentManagement: React.FC = () => {
 
       {/* CREATE / EDIT DEPARTURE MODAL */}
       {departureModalOpen && (
-        <div className="fixed inset-0 z-50 bg-stone-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-stone-950/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 animate-in fade-in">
           <form
             onSubmit={handleSaveDeparture}
-            className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-stone-200 space-y-4 text-xs animate-in fade-in zoom-in-95"
+            className="bg-white dark:bg-stone-900 rounded-2xl sm:rounded-3xl max-w-lg w-full max-h-[92dvh] sm:max-h-[88vh] flex flex-col shadow-2xl border border-stone-200 dark:border-stone-800 text-xs overflow-hidden"
           >
-            <div className="flex items-center justify-between pb-3 border-b border-stone-100">
+            {/* Sticky Header */}
+            <div className="sticky top-0 z-20 bg-white dark:bg-stone-900 px-4 sm:px-6 py-3.5 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2">
-                <CalendarDays className="w-5 h-5 text-amber-600" />
-                <h3 className="text-base font-extrabold text-stone-900">
+                <CalendarDays className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                <h3 className="text-base font-extrabold text-stone-900 dark:text-white">
                   {editingDeparture ? t('departures.admin.edit') : t('departures.admin.new')}
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setDepartureModalOpen(false)}
-                className="p-1 text-stone-400 hover:text-stone-700 rounded cursor-pointer"
+                className="p-1.5 text-stone-400 hover:text-stone-700 dark:hover:text-white rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 cursor-pointer"
+                aria-label="Fermer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div>
-              <label className="font-bold text-stone-700 block mb-1">
-                {t('departures.admin.circuitSelect')}
-              </label>
-              <select
-                value={depCircuitId}
-                onChange={(e) => handleCircuitChangeInForm(e.target.value)}
-                className="w-full text-xs p-2.5 rounded-lg border border-stone-300 bg-white focus:ring-2 focus:ring-amber-500/40"
-              >
-                {circuits.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.title[language] || c.title['fr']} ({c.durationDays}j · {c.region})
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
+            {/* Scrollable Form Body */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
               <div>
-                <label className="font-bold text-stone-700 block mb-1">
-                  {t('departures.admin.startDate')}
-                </label>
-                <input
-                  type="date"
-                  required
-                  value={depStartDate}
-                  onChange={(e) => setDepStartDate(e.target.value)}
-                  className="w-full text-xs p-2 rounded-lg border border-stone-300 bg-white"
-                />
-              </div>
-              <div>
-                <label className="font-bold text-stone-700 block mb-1">
-                  {t('departures.admin.endDate')}
-                </label>
-                <input
-                  type="date"
-                  required
-                  value={depEndDate}
-                  onChange={(e) => setDepEndDate(e.target.value)}
-                  className="w-full text-xs p-2 rounded-lg border border-stone-300 bg-white"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-3">
-              <div>
-                <label className="font-bold text-stone-700 block mb-1">
-                  {t('departures.admin.capacity')}
-                </label>
-                <input
-                  type="number"
-                  min="2"
-                  max="50"
-                  required
-                  value={depCapacityTotal}
-                  onChange={(e) => setDepCapacityTotal(Number(e.target.value))}
-                  className="w-full text-xs p-2 rounded-lg border border-stone-300"
-                />
-              </div>
-              <div>
-                <label className="font-bold text-stone-700 block mb-1">
-                  {t('departures.admin.booked')}
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  max={depCapacityTotal}
-                  required
-                  value={depSeatsBooked}
-                  onChange={(e) => setDepSeatsBooked(Number(e.target.value))}
-                  className="w-full text-xs p-2 rounded-lg border border-stone-300"
-                />
-              </div>
-              <div>
-                <label className="font-bold text-stone-700 block mb-1">
-                  {t('departures.admin.min')}
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max="20"
-                  required
-                  value={depMinParticipants}
-                  onChange={(e) => setDepMinParticipants(Number(e.target.value))}
-                  className="w-full text-xs p-2 rounded-lg border border-stone-300"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="font-bold text-stone-700 block mb-1">
-                  {t('departures.admin.price')}
-                </label>
-                <input
-                  type="number"
-                  min="50"
-                  step="10"
-                  required
-                  value={depPriceEUR}
-                  onChange={(e) => setDepPriceEUR(Number(e.target.value))}
-                  className="w-full text-xs p-2 rounded-lg border border-stone-300"
-                />
-              </div>
-              <div>
-                <label className="font-bold text-stone-700 block mb-1">
-                  {t('departures.admin.status')}
+                <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">
+                  {t('departures.admin.circuitSelect')}
                 </label>
                 <select
-                  value={depStatus}
-                  onChange={(e) => setDepStatus(e.target.value as GuaranteedDeparture['status'])}
-                  className="w-full text-xs p-2 rounded-lg border border-stone-300 bg-white"
+                  value={depCircuitId}
+                  onChange={(e) => handleCircuitChangeInForm(e.target.value)}
+                  className="w-full text-xs p-2.5 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-white focus:ring-2 focus:ring-amber-500/40"
                 >
-                  <option value="ouvert">{t('departures.admin.status.open')}</option>
-                  <option value="presque_complet">{t('departures.admin.status.almostFull')}</option>
-                  <option value="confirme">{t('departures.admin.status.confirmed')}</option>
-                  <option value="complet">{t('departures.admin.status.full')}</option>
+                  {circuits.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.title[language] || c.title['fr']} ({c.durationDays}j · {c.region})
+                    </option>
+                  ))}
                 </select>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">
+                    {t('departures.admin.startDate')}
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={depStartDate}
+                    onChange={(e) => setDepStartDate(e.target.value)}
+                    className="w-full text-xs p-2 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">
+                    {t('departures.admin.endDate')}
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={depEndDate}
+                    onChange={(e) => setDepEndDate(e.target.value)}
+                    className="w-full text-xs p-2 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">
+                    {t('departures.admin.capacity')}
+                  </label>
+                  <input
+                    type="number"
+                    min="2"
+                    max="50"
+                    required
+                    value={depCapacityTotal}
+                    onChange={(e) => setDepCapacityTotal(Number(e.target.value))}
+                    className="w-full text-xs p-2 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">
+                    {t('departures.admin.booked')}
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max={depCapacityTotal}
+                    required
+                    value={depSeatsBooked}
+                    onChange={(e) => setDepSeatsBooked(Number(e.target.value))}
+                    className="w-full text-xs p-2 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">
+                    {t('departures.admin.min')}
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="20"
+                    required
+                    value={depMinParticipants}
+                    onChange={(e) => setDepMinParticipants(Number(e.target.value))}
+                    className="w-full text-xs p-2 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">
+                    {t('departures.admin.price')}
+                  </label>
+                  <input
+                    type="number"
+                    min="50"
+                    step="10"
+                    required
+                    value={depPriceEUR}
+                    onChange={(e) => setDepPriceEUR(Number(e.target.value))}
+                    className="w-full text-xs p-2 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">
+                    {t('departures.admin.status')}
+                  </label>
+                  <select
+                    value={depStatus}
+                    onChange={(e) => setDepStatus(e.target.value as GuaranteedDeparture['status'])}
+                    className="w-full text-xs p-2 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-white"
+                  >
+                    <option value="ouvert">{t('departures.admin.status.open')}</option>
+                    <option value="presque_complet">{t('departures.admin.status.almostFull')}</option>
+                    <option value="confirme">{t('departures.admin.status.confirmed')}</option>
+                    <option value="complet">{t('departures.admin.status.full')}</option>
+                  </select>
+                </div>
               </div>
             </div>
 
-            <div className="pt-3 border-t border-stone-100 flex items-center justify-end gap-2">
+            {/* Sticky Footer */}
+            <div className="sticky bottom-0 z-20 bg-stone-50 dark:bg-stone-900 px-4 sm:px-6 py-3 border-t border-stone-200 dark:border-stone-800 flex items-center justify-end gap-2 shrink-0">
               <button
                 type="button"
                 onClick={() => setDepartureModalOpen(false)}
-                className="px-3.5 py-2 text-stone-600 hover:text-stone-900 cursor-pointer font-semibold"
+                className="px-3.5 py-2 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white cursor-pointer font-semibold"
               >
                 {t('departures.admin.cancel')}
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-stone-900 hover:bg-stone-800 text-white font-bold rounded-lg cursor-pointer"
+                className="px-4 py-2 bg-stone-900 dark:bg-amber-500 hover:bg-stone-800 dark:hover:bg-amber-400 text-white dark:text-stone-950 font-bold rounded-xl cursor-pointer shadow-sm transition-all"
               >
                 {t('departures.admin.save')}
               </button>
@@ -847,17 +853,33 @@ export const ContentManagement: React.FC = () => {
 
       {/* Edit Circuit Modal */}
       {editingCircuit && (
-        <div className="fixed inset-0 z-50 bg-stone-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-stone-950/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 animate-in fade-in">
           <form
             onSubmit={handleSaveCircuitEdit}
-            className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-stone-200 space-y-4 text-xs"
+            className="bg-white dark:bg-stone-900 rounded-2xl sm:rounded-3xl max-w-xl w-full max-h-[92dvh] sm:max-h-[88vh] flex flex-col shadow-2xl border border-stone-200 dark:border-stone-800 text-xs overflow-hidden"
           >
-            <h3 className="text-base font-bold text-stone-900 pb-2 border-b border-stone-100">
-              Modifier le circuit : {editingCircuit.title.fr}
-            </h3>
+            {/* Sticky Header */}
+            <div className="sticky top-0 z-20 bg-white dark:bg-stone-900 px-4 sm:px-6 py-3.5 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2">
+                <Edit className="w-4 h-4 text-amber-500" />
+                <h3 className="text-sm sm:text-base font-bold text-stone-900 dark:text-white truncate">
+                  Modifier : {editingCircuit.title.fr}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingCircuit(null)}
+                className="p-1.5 text-stone-400 hover:text-stone-700 dark:hover:text-white rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 cursor-pointer"
+                aria-label="Fermer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-            <div>
-              <label className="font-semibold block mb-1">Titre (Français)</label>
+            {/* Scrollable Form Body */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+              <div>
+                <label className="font-semibold text-stone-700 dark:text-stone-300 block mb-1">Titre (Français)</label>
               <input
                 type="text"
                 value={editingCircuit.title.fr}
@@ -1043,18 +1065,20 @@ export const ContentManagement: React.FC = () => {
                 })}
               </div>
             </div>
+          </div>
 
-            <div className="pt-3 border-t border-stone-100 flex items-center justify-end gap-2">
+          {/* Sticky Footer */}
+            <div className="sticky bottom-0 z-20 bg-stone-50 dark:bg-stone-900 px-4 sm:px-6 py-3 border-t border-stone-200 dark:border-stone-800 flex items-center justify-end gap-2 shrink-0">
               <button
                 type="button"
                 onClick={() => setEditingCircuit(null)}
-                className="px-3 py-1.5 text-stone-600 hover:text-stone-900 font-semibold cursor-pointer"
+                className="px-3.5 py-2 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white font-semibold cursor-pointer"
               >
                 Annuler
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-stone-900 hover:bg-stone-800 text-white font-bold rounded-lg cursor-pointer"
+                className="px-4 py-2 bg-stone-900 dark:bg-amber-500 hover:bg-stone-800 dark:hover:bg-amber-400 text-white dark:text-stone-950 font-bold rounded-xl cursor-pointer shadow-sm transition-all"
               >
                 Enregistrer les modifications
               </button>
@@ -1065,32 +1089,43 @@ export const ContentManagement: React.FC = () => {
 
       {/* CREATE NEW CIRCUIT MODAL (Admin Only) */}
       {createCircuitModalOpen && (
-        <div className="fixed inset-0 z-50 bg-stone-950/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-stone-950/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 animate-in fade-in">
           <form
             onSubmit={handleCreateCircuitSubmit}
-            className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-stone-200 space-y-4 text-xs my-8"
+            className="bg-white dark:bg-stone-900 rounded-2xl sm:rounded-3xl max-w-2xl w-full max-h-[92dvh] sm:max-h-[88vh] flex flex-col shadow-2xl border border-stone-200 dark:border-stone-800 text-xs overflow-hidden"
           >
-            <div className="flex items-center justify-between pb-3 border-b border-stone-100">
+            {/* Sticky Header */}
+            <div className="sticky top-0 z-20 bg-white dark:bg-stone-900 px-4 sm:px-6 py-3.5 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2">
-                <Plus className="w-5 h-5 text-amber-600" />
-                <h3 className="text-base font-extrabold text-stone-900">
-                  Créer un Nouveau Circuit Touristique
-                </h3>
+                <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold">
+                  <Plus className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-extrabold text-stone-900 dark:text-white line-clamp-1">
+                    Créer un Nouveau Circuit Touristique
+                  </h3>
+                  <p className="text-[11px] text-stone-500 dark:text-stone-400">
+                    Publication directe dans le catalogue officiel
+                  </p>
+                </div>
               </div>
               <button
                 type="button"
                 onClick={() => setCreateCircuitModalOpen(false)}
-                className="p-1 text-stone-400 hover:text-stone-700 rounded cursor-pointer"
+                className="p-1.5 text-stone-400 hover:text-stone-700 dark:hover:text-white rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 cursor-pointer"
+                aria-label="Fermer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="md:col-span-2">
-                <label className="block font-bold text-stone-800 mb-1">
-                  Titre du Circuit (Français) *
-                </label>
+            {/* Scrollable Form Body */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <label className="block font-bold text-stone-800 dark:text-stone-200 mb-1">
+                    Titre du Circuit (Français) *
+                  </label>
                 <input
                   type="text"
                   required
@@ -1359,19 +1394,21 @@ export const ContentManagement: React.FC = () => {
                   className="w-full text-xs p-2 rounded-lg border border-stone-300"
                 />
               </div>
+              </div>
             </div>
 
-            <div className="pt-3 border-t border-stone-100 flex items-center justify-end gap-2">
+            {/* Sticky Footer */}
+            <div className="sticky bottom-0 z-20 bg-stone-50 dark:bg-stone-900 px-4 sm:px-6 py-3 border-t border-stone-200 dark:border-stone-800 flex items-center justify-end gap-2 shrink-0">
               <button
                 type="button"
                 onClick={() => setCreateCircuitModalOpen(false)}
-                className="px-4 py-2 text-stone-600 hover:text-stone-900 font-semibold cursor-pointer"
+                className="px-4 py-2 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white font-semibold cursor-pointer"
               >
                 Annuler
               </button>
               <button
                 type="submit"
-                className="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold rounded-lg shadow-sm cursor-pointer"
+                className="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold rounded-xl shadow-sm cursor-pointer transition-all hover:scale-[1.01]"
               >
                 Créer et Publier le Circuit
               </button>

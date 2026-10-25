@@ -28,9 +28,9 @@ export const LegalModal: React.FC = () => {
   const title = titles[legalModalType]?.[language] || titles[legalModalType]?.['fr'];
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-stone-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
-      <div className="bg-white max-w-3xl w-full rounded-2xl shadow-2xl border border-stone-200 overflow-hidden flex flex-col max-h-[85vh]">
-        <div className="bg-stone-900 text-white px-6 py-4 flex items-center justify-between border-b border-stone-800">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-stone-950/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 animate-fadeIn">
+      <div className="bg-white dark:bg-stone-900 max-w-3xl w-full rounded-2xl shadow-2xl border border-stone-200 dark:border-stone-800 overflow-hidden flex flex-col max-h-[92dvh]">
+        <div className="bg-stone-900 text-white px-4 py-3 sm:px-6 sm:py-4 flex items-center justify-between border-b border-stone-800 shrink-0">
           <div className="flex items-center gap-2">
             <Shield className="w-4 h-4 text-amber-400" />
             <h3 className="text-sm font-bold tracking-tight">

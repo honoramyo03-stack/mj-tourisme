@@ -155,10 +155,10 @@ export const CircuitDetailModal: React.FC<CircuitDetailModalProps> = ({ circuit,
   const whatsAppUrl = `https://wa.me/${whatsAppPhone}?text=${whatsAppMessage}`;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-stone-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
-      <div className="relative bg-white dark:bg-stone-900 w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden border border-stone-200 dark:border-stone-800 flex flex-col max-h-[92vh]">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-stone-950/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-6 animate-fadeIn">
+      <div className="relative bg-white dark:bg-stone-900 w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden border border-stone-200 dark:border-stone-800 flex flex-col max-h-[92dvh]">
         {/* Sticky Modal Header */}
-        <div className="sticky top-0 z-20 bg-stone-900 text-white px-6 py-4 flex items-center justify-between border-b border-stone-800">
+        <div className="sticky top-0 z-20 bg-stone-900 text-white px-4 py-3 sm:px-6 sm:py-4 flex items-center justify-between border-b border-stone-800 shrink-0">
           <div>
             <div className="flex items-center gap-2 text-xs font-medium text-amber-400">
               <span>{regionLabel}</span>

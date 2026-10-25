@@ -32,8 +32,8 @@ export const CircuitComparisonModal: React.FC = () => {
   if (!isComparisonModalOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-stone-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-stone-900 rounded-3xl max-w-5xl w-full max-h-[92vh] flex flex-col overflow-hidden border border-stone-200 dark:border-stone-800 shadow-2xl">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-stone-950/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-6 animate-in fade-in duration-200">
+      <div className="bg-white dark:bg-stone-900 rounded-3xl max-w-5xl w-full max-h-[92dvh] flex flex-col overflow-hidden border border-stone-200 dark:border-stone-800 shadow-2xl">
         {/* Header */}
         <div className="p-4 sm:p-6 bg-gradient-to-r from-stone-900 via-stone-850 to-stone-900 text-white flex items-center justify-between border-b border-stone-800 shrink-0">
           <div className="flex items-center gap-3">

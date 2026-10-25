@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Language } from '../types';
-import { Globe, Menu, X, Shield, PhoneCall, Sun, Moon, Heart, Coins, Calculator, Layers } from 'lucide-react';
+import { Globe, Menu, X, Shield, PhoneCall, Sun, Moon, Heart, Coins, Calculator, Layers, Smartphone } from 'lucide-react';
+import { PWAInstallNavButton } from './PWAInstallPrompt';
 
 export const Header: React.FC = () => {
   const {
@@ -59,18 +60,21 @@ export const Header: React.FC = () => {
   ];
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 dark:bg-stone-900/95 backdrop-blur-md text-stone-900 dark:text-stone-100 border-b border-stone-200 dark:border-stone-800 transition-colors duration-200">
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-3 sm:gap-8">
-        {/* Zone 1: Brand Wordmark */}
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 dark:bg-stone-900/95 backdrop-blur-md text-stone-900 dark:text-stone-100 border-b border-stone-200 dark:border-stone-800 transition-colors duration-200 shadow-xs">
+      <div className="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-2 sm:gap-8">
+        {/* Zone 1: Brand Wordmark (Icon only on mobile / Android, Full name on tablet & desktop) */}
         <button
           onClick={() => handleNavClick('home')}
           className="text-left group cursor-pointer shrink-0 min-w-0"
+          title="Ravinala Tours Madagascar"
+          aria-label="Ravinala Tours Madagascar"
         >
           <div className="flex items-center gap-2 sm:gap-2.5">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-amber-500 flex items-center justify-center text-stone-950 font-bold text-base sm:text-lg shadow-sm shrink-0">
+            <div className="w-9 h-9 rounded-lg bg-amber-500 flex items-center justify-center text-stone-950 font-extrabold text-lg shadow-sm shrink-0">
               R
             </div>
-            <div className="min-w-0">
+            {/* Site name hidden on mobile/Android, displayed on tablet & desktop */}
+            <div className="hidden sm:block min-w-0">
               <span className="text-base sm:text-xl font-bold tracking-tight text-stone-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors truncate block">
                 Ravinala Tours
               </span>
@@ -265,6 +269,9 @@ export const Header: React.FC = () => {
             )}
           </button>
 
+          {/* Android PWA Install button */}
+          <PWAInstallNavButton />
+
           {/* Language Selector */}
           <div className="relative">
             <button
@@ -382,7 +389,7 @@ export const Header: React.FC = () => {
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-800 px-4 pt-3 pb-6 space-y-2 text-stone-800 dark:text-stone-200">
+        <div className="lg:hidden bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-800 px-4 pt-3 pb-6 space-y-2 text-stone-800 dark:text-stone-200 max-h-[calc(100dvh-4rem)] overflow-y-auto shadow-2xl animate-in fade-in slide-in-from-top-2 duration-150">
           <button
             onClick={() => handleNavClick('home')}
             className="w-full text-left py-2.5 px-3 text-sm font-medium hover:bg-stone-100 dark:hover:bg-stone-800 rounded-md"
@@ -524,6 +531,11 @@ export const Header: React.FC = () => {
               </span>
             )}
           </button>
+
+          {/* Mobile Android PWA Install */}
+          <div className="py-1">
+            <PWAInstallNavButton />
+          </div>
 
           <div className="pt-3 border-t border-stone-200 dark:border-stone-800 flex flex-col gap-2">
             <button

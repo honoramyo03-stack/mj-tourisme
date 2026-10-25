@@ -27,6 +27,8 @@ import { InteractiveCircuitMap } from './components/InteractiveCircuitMap';
 import { CurrencyConverterView } from './components/CurrencyConverterView';
 import { CircuitComparisonModal } from './components/CircuitComparisonModal';
 import { BudgetSimulatorModal } from './components/BudgetSimulatorModal';
+import { PWAInstallPrompt } from './components/PWAInstallPrompt';
+import { OfflineIndicator } from './components/OfflineIndicator';
 import {
   Compass,
   Filter,
@@ -183,9 +185,11 @@ const MainApp: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden flex flex-col bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 selection:bg-amber-600 selection:text-white transition-colors duration-200">
-      {/* Top Header */}
+    <div className="min-h-screen w-full max-w-full overflow-x-clip flex flex-col bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 selection:bg-amber-600 selection:text-white transition-colors duration-200">
+      {/* Top Header - Always fixed and permanently visible */}
       <Header />
+      {/* Spacer to guarantee content starts cleanly below the fixed header */}
+      <div className="h-16 sm:h-20 shrink-0" aria-hidden="true" />
 
       <main className="flex-1 w-full max-w-full overflow-x-hidden">
         {/* VIEW: HOME */}
@@ -775,11 +779,11 @@ const MainApp: React.FC = () => {
 
       {/* Dedicated Currency Converter Modal (when opened from anywhere) */}
       {isCurrencyConverterModalOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-stone-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
-          <div className="relative w-full max-w-4xl max-h-[92vh] overflow-y-auto rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 p-4 sm:p-6 shadow-2xl">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-stone-950/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-6 animate-fadeIn">
+          <div className="relative w-full max-w-4xl max-h-[92dvh] overflow-y-auto rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 p-4 sm:p-6 shadow-2xl">
             <button
               onClick={() => setIsCurrencyConverterModalOpen(false)}
-              className="absolute top-4 right-4 z-20 bg-stone-900/80 hover:bg-stone-900 text-white p-2 rounded-full cursor-pointer"
+              className="sticky top-2 float-right z-30 bg-stone-900/80 hover:bg-stone-900 text-white p-2 rounded-full cursor-pointer shadow-lg"
               aria-label="Fermer"
             >
               <X className="w-5 h-5" />
@@ -791,11 +795,11 @@ const MainApp: React.FC = () => {
 
       {/* Quote Request Modal */}
       {quoteModalOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-stone-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
-          <div className="relative w-full max-w-4xl max-h-[92vh] overflow-y-auto rounded-2xl">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-stone-950/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-6 animate-fadeIn">
+          <div className="relative w-full max-w-4xl max-h-[92dvh] overflow-y-auto rounded-2xl">
             <button
               onClick={() => setQuoteModalOpen(false)}
-              className="absolute top-4 right-4 z-20 bg-stone-900/80 hover:bg-stone-900 text-white p-2 rounded-full cursor-pointer"
+              className="sticky top-4 float-right mr-3 z-30 bg-stone-900/80 hover:bg-stone-900 text-white p-2 rounded-full cursor-pointer shadow-lg"
             >
               <X className="w-5 h-5" />
             </button>
@@ -815,6 +819,12 @@ const MainApp: React.FC = () => {
 
       {/* Admin Authentication Modal */}
       <AdminLoginModal />
+
+      {/* Android PWA Install Banner */}
+      <PWAInstallPrompt />
+
+      {/* Network Offline Indicator */}
+      <OfflineIndicator />
     </div>
   );
 };
